@@ -1,0 +1,6 @@
+CREATE TABLE TestGameTable (
+    Id INT PRIMARY KEY,
+    Name VARCHAR(255) NOT NULL
+);
+
+
