@@ -8,9 +8,9 @@
 --     ON member.principal_id = rm.member_principal_id
 -- WHERE member.name IN ('TJColon', 'NandaSurendra');
 
-if object_id('Recommendation') is not null 
+if object_id('Recommendation') is not null
     drop table Recommendation;
-if object_id('UserGame') is not null 
+if object_id('UserGame') is not null
     drop table UserGame;
 if object_id('GameGenre') is not null 
     drop table GameGenre;
@@ -33,8 +33,10 @@ CREATE TABLE Users (
     Username    VARCHAR(50)  NOT NULL UNIQUE,
     Email       VARCHAR(100) NOT NULL UNIQUE,
     PW          VARCHAR(255) NOT NULL,
-    Role        VARCHAR(20)  NOT NULL,
+    UserRole        VARCHAR(20)  NOT NULL,
     DateJoined  TIMESTAMP    NOT NULL
+    CONSTRAINT UQ_Users_Username UNIQUE (Username),
+    CONSTRAINT UQ_Users_Email UNIQUE (Email)
 );
 
 go 
@@ -42,7 +44,6 @@ go
 CREATE TABLE Developer (
     DeveloperID   INT PRIMARY KEY,
     DeveloperName VARCHAR(100) NOT NULL
-    CONSTRAINT UQ_Developer_Name UNIQUE (DeveloperName)
 );
 
 go 
@@ -97,12 +98,13 @@ go
 CREATE TABLE UserGame (
     UserID       INT NOT NULL,
     GameID       INT NOT NULL,
-    Status       VARCHAR(20) NOT NULL,
+    OnlineStatus       VARCHAR(20) NOT NULL,
     HoursPlayed  INT DEFAULT 0,
     DateAdded    TIMESTAMP NOT NULL,
     LastPlayed   DATE,
     Rating       INT CHECK (Rating BETWEEN 1 AND 10),
     PRIMARY KEY (UserID, GameID),
+    CONSTRAINT UQ_UserGame_UserID_GameID UNIQUE (UserID, GameID),
     FOREIGN KEY (UserID) REFERENCES Users(UserID),
     FOREIGN KEY (GameID) REFERENCES Game(GameID)
 );
