@@ -42,6 +42,7 @@ go
 CREATE TABLE Developer (
     DeveloperID   INT PRIMARY KEY,
     DeveloperName VARCHAR(100) NOT NULL
+    CONSTRAINT UQ_Developer_Name UNIQUE (DeveloperName)
 );
 
 go 
@@ -118,5 +119,4 @@ CREATE TABLE Recommendation (
     GeneratedAt       TIMESTAMP NOT NULL,
     FOREIGN KEY (UserID) REFERENCES Users(UserID),
     FOREIGN KEY (GameID) REFERENCES Game(GameID)
-
 );
