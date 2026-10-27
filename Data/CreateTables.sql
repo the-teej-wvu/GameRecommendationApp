@@ -44,6 +44,7 @@ go
 CREATE TABLE Developer (
     DeveloperID   INT PRIMARY KEY,
     DeveloperName VARCHAR(100) NOT NULL
+    CONSTRAINT UQ_Developer_DeveloperName UNIQUE (DeveloperName)
 );
 
 go 
