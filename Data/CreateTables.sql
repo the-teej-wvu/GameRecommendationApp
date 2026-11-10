@@ -28,98 +28,112 @@ if object_id('Users') is not null
     drop table Users;
 
 
-CREATE TABLE Users (
-    UserID      INT PRIMARY KEY,
-    Username    VARCHAR(50)  NOT NULL UNIQUE,
-    Email       VARCHAR(100) NOT NULL UNIQUE,
-    PW          VARCHAR(255) NOT NULL,
-    UserRole        VARCHAR(20)  NOT NULL,
-    DateJoined  TIMESTAMP    NOT NULL
-    CONSTRAINT UQ_Users_Username UNIQUE (Username),
-    CONSTRAINT UQ_Users_Email UNIQUE (Email)
-);
+IF OBJECT_ID('Recommendation') IS NOT NULL DROP TABLE Recommendation;
+IF OBJECT_ID('UserGame')       IS NOT NULL DROP TABLE UserGame;
+IF OBJECT_ID('GameGenre')      IS NOT NULL DROP TABLE GameGenre;
+IF OBJECT_ID('GamePlatform')   IS NOT NULL DROP TABLE GamePlatform;
+IF OBJECT_ID('Game')           IS NOT NULL DROP TABLE Game;
+IF OBJECT_ID('Genre')          IS NOT NULL DROP TABLE Genre;
+IF OBJECT_ID('Platform')       IS NOT NULL DROP TABLE Platform;
+IF OBJECT_ID('Developer')      IS NOT NULL DROP TABLE Developer;
+IF OBJECT_ID('Users')          IS NOT NULL DROP TABLE Users;
+GO
 
-go 
+CREATE TABLE [Users] (
+    UserID      INT           NOT NULL PRIMARY KEY,
+    Username    VARCHAR(50)   NOT NULL,
+    Email       VARCHAR(100)  NOT NULL,
+    PW          VARCHAR(255)  NOT NULL,
+    UserRole    VARCHAR(20)   NOT NULL,
+    DateJoined  DATETIME2     NOT NULL DEFAULT SYSDATETIME(),
+    CONSTRAINT UQ_Users_Username UNIQUE (Username),
+    CONSTRAINT UQ_Users_Email    UNIQUE (Email)
+);
+GO
 
 CREATE TABLE Developer (
-    DeveloperID   INT PRIMARY KEY,
-    DeveloperName VARCHAR(100) NOT NULL
+    DeveloperID    INT          NOT NULL PRIMARY KEY,
+    DeveloperName  VARCHAR(100) NOT NULL,
     CONSTRAINT UQ_Developer_DeveloperName UNIQUE (DeveloperName)
 );
-
-go 
+GO
 
 CREATE TABLE Game (
-    GameID       INT PRIMARY KEY,
+    GameID       INT          NOT NULL PRIMARY KEY,
     Title        VARCHAR(150) NOT NULL,
     ReleaseYr    INT,
     Publisher    VARCHAR(100),
-    DeveloperID  INT NOT NULL,
-    FOREIGN KEY (DeveloperID) REFERENCES Developer(DeveloperID)
+    DeveloperID  INT          NOT NULL,
+    CONSTRAINT FK_Game_Developer
+        FOREIGN KEY (DeveloperID) REFERENCES Developer(DeveloperID)
 );
-
-go 
+GO
 
 CREATE TABLE Platform (
-    PlatformID       INT PRIMARY KEY,
-    PlatName         VARCHAR(50) NOT NULL,
+    PlatformID       INT          NOT NULL PRIMARY KEY,
+    PlatName         VARCHAR(50)  NOT NULL,
     PlatManufacture  VARCHAR(100)
 );
-
-go 
+GO
 
 CREATE TABLE Genre (
-    GenreID    INT PRIMARY KEY,
-    GenreName  VARCHAR(50) NOT NULL UNIQUE
+    GenreID    INT         NOT NULL PRIMARY KEY,
+    GenreName  VARCHAR(50) NOT NULL,
+    CONSTRAINT UQ_Genre_GenreName UNIQUE (GenreName)
 );
-
-go 
+GO
 
 CREATE TABLE GamePlatform (
     PlatformID  INT NOT NULL,
     GameID      INT NOT NULL,
     NumGames    INT,
-    PRIMARY KEY (PlatformID, GameID),
-    FOREIGN KEY (PlatformID) REFERENCES Platform(PlatformID),
-    FOREIGN KEY (GameID)     REFERENCES Game(GameID)
+    CONSTRAINT PK_GamePlatform PRIMARY KEY (PlatformID, GameID),
+    CONSTRAINT FK_GamePlatform_Platform
+        FOREIGN KEY (PlatformID) REFERENCES Platform(PlatformID),
+    CONSTRAINT FK_GamePlatform_Game
+        FOREIGN KEY (GameID) REFERENCES Game(GameID)
 );
-
-go
+GO
 
 CREATE TABLE GameGenre (
     GameID   INT NOT NULL,
     GenreID  INT NOT NULL,
-    PRIMARY KEY (GameID, GenreID),
-    FOREIGN KEY (GameID)  REFERENCES Game(GameID),
-    FOREIGN KEY (GenreID) REFERENCES Genre(GenreID)
+    CONSTRAINT PK_GameGenre PRIMARY KEY (GameID, GenreID),
+    CONSTRAINT FK_GameGenre_Game
+        FOREIGN KEY (GameID) REFERENCES Game(GameID),
+    CONSTRAINT FK_GameGenre_Genre
+        FOREIGN KEY (GenreID) REFERENCES Genre(GenreID)
 );
-
-go
+GO
 
 CREATE TABLE UserGame (
-    UserID       INT NOT NULL,
-    GameID       INT NOT NULL,
-    OnlineStatus       VARCHAR(20) NOT NULL,
-    HoursPlayed  INT DEFAULT 0,
-    DateAdded    TIMESTAMP NOT NULL,
+    UserID       INT         NOT NULL,
+    GameID       INT         NOT NULL,
+    Status       VARCHAR(20) NOT NULL,
+    HoursPlayed  INT         NOT NULL DEFAULT 0,
+    DateAdded    DATETIME2   NOT NULL DEFAULT SYSDATETIME(),
     LastPlayed   DATE,
-    Rating       INT CHECK (Rating BETWEEN 1 AND 10),
-    PRIMARY KEY (UserID, GameID),
-    CONSTRAINT UQ_UserGame_UserID_GameID UNIQUE (UserID, GameID),
-    FOREIGN KEY (UserID) REFERENCES Users(UserID),
-    FOREIGN KEY (GameID) REFERENCES Game(GameID)
+    Rating       INT,
+    CONSTRAINT PK_UserGame PRIMARY KEY (UserID, GameID),
+    CONSTRAINT FK_UserGame_User
+        FOREIGN KEY (UserID) REFERENCES Users(UserID),
+    CONSTRAINT FK_UserGame_Game
+        FOREIGN KEY (GameID) REFERENCES Game(GameID)
 );
-
-go
+GO  
 
 CREATE TABLE Recommendation (
-    RecommendationID  INT PRIMARY KEY,
-    UserID            INT NOT NULL,
-    GameID            INT NOT NULL,
-    Score             INT,
-    CommunityScore    INT,
-    Reason            VARCHAR(255),
-    GeneratedAt       TIMESTAMP NOT NULL,
-    FOREIGN KEY (UserID) REFERENCES Users(UserID),
-    FOREIGN KEY (GameID) REFERENCES Game(GameID)
+    RecommendationID      INT          NOT NULL PRIMARY KEY,
+    UserID                INT          NOT NULL,
+    GameID                INT          NOT NULL,
+    Score                 INT,
+    CommunityScore        INT,
+    Reason                VARCHAR(255),
+    GeneratedAt           DATETIME2    NOT NULL DEFAULT SYSDATETIME(),
+    AcceptRecommendation  BIT          NOT NULL DEFAULT 0,
+    CONSTRAINT FK_Recommendation_Users
+        FOREIGN KEY (UserID) REFERENCES Users(UserID),
+    CONSTRAINT FK_Recommendation_Game
+        FOREIGN KEY (GameID) REFERENCES Game(GameID)
 );
+GO
